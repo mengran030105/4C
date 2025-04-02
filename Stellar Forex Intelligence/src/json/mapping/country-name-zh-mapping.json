@@ -19,16 +19,15 @@
   "Croatia": "Croatia",
   "Indonesia": "Indonesia",
   "India": "India",
-  "Ireland":"Ireland",
+  "Ireland": "Ireland",
   "Israel": "Israel",
   "Italy": "Italy",
   "Japan": "Japan",
-  "South Korea": "Korea",
+  "Korea": "Korea",
   "Lithuania": "Lithuania",
   "Luxembourg": "Luxembourg",
   "Latvia": "Latvia",
   "Mexico": "Mexico",
-  "Malta":"Malta",
   "Netherlands": "Netherlands",
   "Norway": "Norway",
   "Poland": "Poland",
@@ -41,5 +40,4 @@
   "Thailand": "Thailand",
   "Turkey": "Turkey",
   "United_States": "United_States"
-
 }

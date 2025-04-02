@@ -10,8 +10,7 @@
           :disabled-date="disabledDate"
           @change="handleDateSelected"
         />
-        <div ref="chartRef" class="chart" :style="chartStyle" />
-
+        <div ref="sunburstChart" class="chart" :style="chartStyle" />
         <!-- 汇率详情板块 -->
         <div v-if="showDetails" class="chart-container exchange-rate-container">
           <div class="exchange-rate-details">
@@ -31,7 +30,7 @@
                   <th>货币汇率</th>
                 </tr>
               </thead>
-              <tbody v-if="new_data">
+              <tbody v-if="new_data?.currency">
                 <tr>
                   <td rowspan="9" style="vertical-align: middle">
                     {{ new_data.currency }}
@@ -60,7 +59,7 @@
           v-if="showDetails"
           ref="barChart"
           class="chart-container"
-          style="height: 400px; width: 100%"
+          style="height: 600px; width: 100%"
         />
       </div>
     </div>
@@ -137,12 +136,11 @@
 <script lang="ts" setup>
 import { ref, onMounted, nextTick, computed, watch } from "vue";
 import * as echarts from "echarts";
-import geo from "@/json/geo";
-import mapping from "@/json/mapping";
 import axios from "axios";
 import dayjs from "dayjs";
 import { ElMessage } from "element-plus";
 import countryNameMapping from "@/json/mapping/country-name-zh-mapping.json";
+import sunburstData from "@/json/currency.json";
 
 const showDetails = ref(false); // 控制所有详情板块显示
 const activeTab = ref("news"); // 当前激活的标签页
@@ -151,12 +149,12 @@ const newsTitle = ref<any[]>([]);
 const selectedNewsIndex = ref<number | null>(null);
 const policyData = ref<any[]>([]); // 政策数据
 const policyDate = ref<any[]>([]);
-const chartRef = ref<HTMLDivElement | null>(null);
 const selectedDate = ref<string>("2024-01-01");
 const selectedCountry = ref<string>("");
 const showExchangeRate = ref<boolean>(false);
 const myChart = ref<echarts.ECharts | null>(null); // 保存 ECharts 实例
-
+const sunburstChart = ref<HTMLDivElement | null>(null);
+const chartInstance = ref<echarts.ECharts | null>(null);
 const selectNews = (index: number) => {
   if (selectedNewsIndex.value === index) {
     // 如果点击的是已选中的新闻，则关闭
@@ -207,7 +205,7 @@ const currencyData = [
   }
 ];
 // 地图样式
-const chartStyle = ref({ width: "100%", height: "500px" });
+const chartStyle = ref({ width: "100%", height: "600px" });
 const pieChart = ref<HTMLDivElement | null>(null);
 
 // 只允许 2024 年内选择
@@ -235,104 +233,204 @@ const sendToBackend = async (datas: {
   date?: string;
   countries?: string[];
 }) => {
-  // 检查 country 和 date 是否存在
   if (!datas.country || !datas.date) {
     console.error("国家或日期未选择，无法发送请求");
     return;
   }
-
   // 检查日期格式是否正确
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(datas.date)) {
     console.error("日期格式不正确，应为 YYYY-MM-DD");
     return;
   }
-
   try {
-    const response = await axios.post("http://121.36.9.36:8000/submit/", datas);
+    const response = await axios.post("http://121.36.9.36:8000/submit/", {
+      country: datas.country,
+      date: datas.date
+    });
     new_data.value = response.data.table_data;
-    console.log(new_data);
+    console.log("后端返回数据:", new_data.value);
   } catch (error) {
-    console.error("Error sending data to backend:", error);
-    // 提示用户后端连接失败，但地图应该仍然显示
-    // alert("无法连接到后端，地图将加载默认数据。");
+    console.error("请求后端出错:", error);
+    ElMessage.error("获取数据失败，请稍后重试");
   }
 };
 console.log(new_data);
 onMounted(async () => {
-  await nextTick(); // 确保 DOM 完成渲染
-  if (!chartRef.value) {
-    console.error("❌ chartRef 未绑定到 DOM！");
+  await nextTick();
+  if (!sunburstChart.value) return;
+
+  const chartInstance = echarts.init(sunburstChart.value);
+  // 修改后的点击事件处理
+  chartInstance.on("click", (params: any) => {
+    (async () => {
+      try {
+        const clickData = {
+          name: params.name,
+          treePath: params.treePathInfo
+            ?.map((n: any) => n.name)
+            .filter(name => name && name !== ""),
+          depth: params.treePathInfo?.length || 0
+        };
+
+        console.log("点击路径分析:", {
+          rawName: params.name,
+          fullPath: clickData.treePath.join(" > "),
+          depth: clickData.depth
+        });
+
+        const [continent, currency, country] = clickData.treePath;
+
+        const countryKey = country.replace(/[^\w]/g, "_");
+
+        if (!(countryKey in countryNameMapping)) {
+          console.warn("当前映射表内容:", Object.keys(countryNameMapping));
+          ElMessage.warning(`暂未支持 ${country} 的数据`);
+          return;
+        }
+
+        selectedCountry.value = countryNameMapping[countryKey];
+        console.log("国家选择详情:", {
+          raw: country,
+          mapped: selectedCountry.value,
+          currency,
+          continent
+        });
+
+        await sendToBackend({
+          country: selectedCountry.value,
+          date: selectedDate.value
+        });
+
+        await fetchAllData();
+      } catch (error) {}
+    })();
     return;
-  }
-  myChart.value = echarts.init(chartRef.value);
-  if (!myChart.value) {
-    console.error("❌ ECharts 初始化失败！");
-    return;
-  }
-  echarts.registerMap("WorldCountry", geo.WorldCountryGeo);
-  const options: echarts.EChartsOption = {
-    tooltip: { trigger: "item" },
-    toolbox: {
-      show: true,
-      orient: "vertical",
-      left: "right",
-      top: "center",
-      feature: {
-        dataView: { readOnly: false },
-        restore: {},
-        saveAsImage: {}
+  });
+
+  const colors = ["#ffde7d", "#f6416c", "#ffd460", "#00b8a9", "#ffde7d"];
+  const bgColor = "#FFFFFF";
+
+  const itemStyle = {
+    star5: { color: colors[0] },
+    star4: { color: colors[1] },
+    star3: { color: colors[2] },
+    star2: { color: colors[3] }
+  };
+
+  // 处理原始数据
+  const processData = (data: any[]) => {
+    return data.map(continent => {
+      const children = (continent.children || []).map(currency => {
+        return {
+          name: currency.currency || "未知货币",
+          children: (currency.children || []).map(country => ({
+            name: country.country || "未知国家",
+            value: country.value || 1,
+            itemStyle: {
+              color: colors[Math.floor(Math.random() * colors.length)]
+            }
+          }))
+        };
+      });
+
+      return {
+        name: continent.continent || "未知大洲",
+        itemStyle: { color: colors[Math.floor(Math.random() * colors.length)] },
+        children
+      };
+    });
+  };
+
+  const processedData = processData(sunburstData);
+
+  // 应用样式到数据
+  processedData.forEach(continent => {
+    continent.children?.forEach(currency => {
+      currency.children?.forEach(country => {
+        country.label = {
+          color: country.itemStyle.color,
+          downplay: { opacity: 0.5 }
+        };
+      });
+    });
+  });
+
+  // 设置图表选项
+  const option = {
+    backgroundColor: "transparent",
+    color: colors,
+    title: {
+      text: "全球货币分布",
+      left: "center",
+      textStyle: {
+        color: "black",
+        fontSize: 24
       }
-    },
-    visualMap: {
-      min: 0,
-      max: 1,
-      show: false,
-      inRange: { color: ["rgb(078,101,155)", "rgb(183, 118, 108)"] }
     },
     series: [
       {
-        name: "世界地图",
-        type: "map",
-        map: "WorldCountry",
-        label: { show: false },
+        type: "sunburst",
+        center: ["50%", "48%"],
+        data: processedData,
+        sort: (a: any, b: any) => {
+          if (a.depth === 1) return b.getValue() - a.getValue();
+          return a.dataIndex - b.dataIndex;
+        },
+        label: {
+          rotate: "radial",
+          color: bgColor,
+          fontSize: 12,
+          formatter: (params: any) =>
+            params.treePathInfo.length === 3 ? params.name : ""
+        },
         itemStyle: {
-          areaColor: "rgb(078,101,155)",
-          borderColor: "rgba(253, 207, 158, 0.6)",
-          borderWidth: 0.3
+          borderColor: bgColor,
+          borderWidth: 0.5
         },
-        emphasis: {
-          label: { show: true, fontSize: "14" },
-          itemStyle: {
-            areaColor: "rgb(183, 118, 108)",
-            borderColor: "rgba(253, 207, 158, 0.8)",
-            borderWidth: 0.8
+        levels: [
+          {
+            r0: 0,
+            r: "5%"
+          }, // 第0层默认样式
+          {
+            // 第一层：大洲
+            r0: "5%",
+            r: "25%",
+            label: { rotate: 0 }
+          },
+          {
+            // 第二层：货币
+            r0: "25%",
+            r: "60%",
+            itemStyle: {
+              shadowBlur: 2
+            },
+            label: {
+              fontSize: 10
+            }
+          },
+          {
+            // 第三层：国家
+            r0: "60%",
+            r: "65%",
+            itemStyle: {
+              shadowBlur: 2
+            },
+            label: {
+              position: "outside",
+              fontSize: 10
+            }
           }
-        },
-        nameMap: mapping.CountryNameZhMapping
+        ]
       }
     ]
   };
-  myChart.value.setOption(options);
-  myChart.value.on("click", (params: any) => {
-    if (!params.name) return;
 
-    // 检查选择的国家是否在映射文件中
-    const countryKey = params.name.replace(/\s+/g, "_"); // 替换空格为下划线以匹配JSON键
-    if (!(countryKey in countryNameMapping)) {
-      ElMessage.warning("本系统暂未获取该国家的数据，请尝试查询其他国家");
-      return;
-    }
+  chartInstance.setOption(option);
 
-    selectedCountry.value = params.name;
-
-    if (selectedDate.value) {
-      fetchAllData();
-    }
-  });
-  console.log(myChart.value.getOption());
-  window.addEventListener("resize", () => myChart.value?.resize());
-
+  // 窗口大小变化时重绘
+  window.addEventListener("resize", () => chartInstance.resize());
   // 柱状图
   const lineChart = echarts.init(
     document.querySelectorAll(".chart-container")[1] as any

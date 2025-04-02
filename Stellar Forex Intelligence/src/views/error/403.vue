@@ -33,6 +33,7 @@ const initChart = (chartRef: HTMLDivElement | null) => {
     return;
   }
 
+  chartRef.style.visibility = "hidden"; // 先隐藏
   const myChart = echarts.init(chartRef, null, { renderer: "svg" });
   myChart.showLoading();
 
@@ -40,18 +41,23 @@ const initChart = (chartRef: HTMLDivElement | null) => {
     .done(json => {
       myChart.hideLoading();
       const option = {
-        animationDurationUpdate: 1000,
+        animationDurationUpdate: 0,
         animationEasingUpdate: "elasticOut" as any,
+        layoutAnimation: false,
         series: [
           {
             type: "graph",
             roam: false,
             layout: "force",
             force: {
-              repulsion: 1,
-              gravity: 0.02,
-              edgeLength: [50, 2000]
+              initLayout: "none", // 不进行初始布局计算，直接使用传入的坐标
+              repulsion: 500, // 适当减少斥力，避免过多计算
+              gravity: 0.2, // 增加引力，使节点快速收敛
+              edgeLength: [0, 2000], // 限制边长范围，减少抖动
+              friction: 1, // 让节点更快收敛（默认 0.6）
+              coolDown: 2
             },
+            layoutAnimation: false,
             boundingRect: [-500, -500, 1000, 1000],
             data: json.nodes.map((node: any) => ({
               x: node.x,
@@ -61,10 +67,10 @@ const initChart = (chartRef: HTMLDivElement | null) => {
               symbolSize: node.size,
               draggable: true,
               itemStyle: { color: node.color },
-              label: { show: true } // 默认不显示 label
+              label: { show: true }
             })),
             edges: json.edges
-              .filter((edge: any) => edge.size !== 0) // 过滤掉 size 为 0 的边
+              .filter((edge: any) => edge.size !== 0)
               .map((edge: any) => ({
                 source: edge.sourceID,
                 target: edge.targetID
@@ -78,21 +84,15 @@ const initChart = (chartRef: HTMLDivElement | null) => {
           }
         ]
       };
+
       myChart.setOption(option);
+      setTimeout(() => {
+        chartRef.style.visibility = "visible"; // 计算完成后显示
+      }, 1500); // 确保力导向布局稳定后显示
     })
     .fail((jqxhr, textStatus, error) => {
       console.error("❌ 请求 JSON 失败：", textStatus, error);
     });
-  myChart.on("graphRoam", function () {
-    const updatedOption = myChart.getOption();
-    const graph = updatedOption.series[0];
-    graph.data.forEach((node: any) => {
-      node.x = Math.max(-500, Math.min(500, node.x));
-      node.y = Math.max(-500, Math.min(500, node.y));
-    });
-
-    myChart.setOption(updatedOption);
-  });
 };
 
 onMounted(() => {
