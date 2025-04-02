@@ -14,9 +14,9 @@ const router = useRouter();
 
 const chartRefLeft = ref<HTMLDivElement | null>(null);
 const chartRefRight = ref<HTMLDivElement | null>(null);
-const maxDrawdown = ref<number>(-0.1); // 最大回撤比例，默认为-0.1
-const selectedMonth = ref<number>(12); // 单选月份
-const selectedPeriod = ref<number>(1); // 交易期限，默认为1年
+const maxDrawdown = ref<number>(); 
+const selectedMonth = ref<number>(); 
+const selectedPeriod = ref<number>(); 
 const availableMonths = computed(() => {
   if (selectedPeriod.value === 1) {
     return [10, 11, 12];
@@ -45,7 +45,7 @@ const initChart = (chartRef: HTMLDivElement | null) => {
         series: [
           {
             type: "graph",
-            roam: true,
+            roam: false,
             layout: "force",
             force: {
               repulsion: 1,
@@ -179,7 +179,7 @@ const updateCharts = (result1: any, result2: any) => {
         {
           type: "graph",
           layout: "force",
-          roam: true,
+          roam: false,
           force: {
             repulsion: 1,
             gravity: 0.02,
@@ -243,7 +243,7 @@ const updateCharts = (result1: any, result2: any) => {
   <div class="max">
     <div class="up">
       <div class="input1">
-        <p style="margin-left: 20px">请输入最大回撤比例：</p>
+        <!-- <p style="margin-left: 20px">请输入最大回撤比例：</p> -->
         <el-input
           v-model.number="maxDrawdown"
           type="number"
@@ -252,10 +252,12 @@ const updateCharts = (result1: any, result2: any) => {
           :min="-100"
           :step="0.01"
           @change="validateInput"
-        />
+        >
+        <template #append>%</template>
+        </el-input>
       </div>
       <div class="input1">
-        <p style="margin-left: 20px">请选择交易期限：</p>
+        <!-- <p style="margin-left: 20px">请选择交易期限：</p> -->
         <el-select
           v-model="selectedPeriod"
           placeholder="选择交易期限"
@@ -268,7 +270,7 @@ const updateCharts = (result1: any, result2: any) => {
       </div>
       <!--  月份选择框 -->
       <div class="input1">
-        <p style="margin-left: 20px">请选择查看的月份：</p>
+        <!-- <p style="margin-left: 20px">请选择查看的月份：</p> -->
         <el-select
           v-model="selectedMonth"
           placeholder="请选择月份"
@@ -282,20 +284,35 @@ const updateCharts = (result1: any, result2: any) => {
           />
         </el-select>
       </div>
-      <el-button class="button" @click="fetchChartData">查询</el-button>
     </div>
+    <div class="down">
+    <el-button class="button" @click="fetchChartData">查询</el-button>
+  </div>
+
+    <div class="legend-container">
+    <div class="legend-item">
+      <span class="legend-line high-risk"></span>
+      <span>有风险货币关联（无向）</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-line safe"></span>
+      <span>无风险货币关联（无向）</span>
+    </div>
+  </div>
+
     <div class="container">
       <div class="left">
-        <h2>多货币回撤图示</h2>
+        <h2>多货币对预测回撤图示</h2>
         <br />
         <div ref="chartRefLeft" class="chart" />
       </div>
       <div class="right">
-        <h2>对比图</h2>
+        <h2>多货币对真实回测图示</h2>
         <br />
         <div ref="chartRefRight" class="chart" />
       </div>
     </div>
+    
   </div>
 </template>
 <style scoped>
@@ -305,11 +322,19 @@ const updateCharts = (result1: any, result2: any) => {
 
 .up {
   display: flex;
+  justify-content: center;
+  margin-left: 100px;
+  margin-right: 100px;
 }
 .input1 {
-  width: 100%;
-  margin: 20px;
+  flex:1;
+  margin-top: 10px;
+  margin-right: 20px;
+  margin-left: 10px; 
+  /* width: 100%; */
+  /* margin: 20px; */
 }
+
 .drawdown-input {
   margin: 10px;
   width: 100%;
@@ -325,9 +350,51 @@ const updateCharts = (result1: any, result2: any) => {
   width: 100%;
 }
 
+.down {
+  display: flex;
+  justify-content: center;
+  margin-left: 100px;
+  margin-right: 100px;
+}
+
 .button {
-  margin: 53px;
-  width: 20%;
+  width: 100%;
+  margin: 10px;
+  margin-left: 20px;
+}
+
+.legend-container {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin: 15px 0;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #606266;
+}
+
+.legend-line {
+  display: inline-block;
+  width: 40px; /* 线段长度 */
+  height: 3px;  /* 线段粗细 */
+  border-radius: 2px; /* 圆角端点 */
+}
+
+.high-risk {
+  background-color: #F44336;
+  box-shadow: 0 0 2px rgba(244, 67, 54, 0.5);
+}
+
+.safe {
+  background-color: #03A9F4;
+  box-shadow: 0 0 2px rgba(3, 169, 244, 0.5);
 }
 
 .container {

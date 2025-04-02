@@ -77,6 +77,7 @@
         :maxDrawdown="maxDrawdown"
       />
     </div>
+
     <div class="report_container">
       <div class="report_title">分析报告</div>
       <div v-if="reportContent" class="report_content">
@@ -84,11 +85,55 @@
       </div>
       <div v-else class="report_empty">暂无报告数据</div>
     </div>
+
+    <div class="portfolio_container" v-if="portfolioData.length > 0">
+      <div class="portfolio_title">最优投资组合建议</div>
+        <div class="portfolio_notice">
+          （基于您选择的第二个国家对应的货币--<b>{{ secondCountryName }}</b>货币的最优投资组合建议）
+        </div>
+      <div class="portfolio_content">
+        <div class="table-wrapper">
+          <el-table 
+            :data="portfolioData" 
+            style="width: 80%; margin: 0 auto;"
+          >
+            <el-table-column 
+              prop="currency" 
+              label="货币" 
+              width="300"
+              align="center"
+            />
+            <el-table-column 
+              prop="weight" 
+              label="权重" 
+              width="300"
+              align="center"
+            >
+              <template #default="{ row }">
+                {{ (row.weight * 100).toFixed(2) }}%
+              </template>
+            </el-table-column>
+            <el-table-column 
+              prop="class" 
+              label="类别"
+              width="320"
+              align="center"
+            >
+              <template #default="{ row }">
+                <el-tag :type="getTagType(row.class)">
+                  {{ formatClass(row.class) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 import RiskChart from "@/components/LineChart/RiskChart.vue";
 import countryNameZhMapping from "@/json/mapping/country-name-zh-mapping.json";
@@ -101,6 +146,12 @@ import DrawDownChart from "@/components/LineChart/DrawDownChart.vue";
 interface ChartData {
   time: string[];
   values: number[];
+}
+
+interface PortfolioItem {
+  currency: string;
+  weight: number;
+  class: "safe_haven" | "major" | "emerging"; // 明确三种类型
 }
 
 const router = useRouter();
@@ -126,12 +177,18 @@ const chartData3 = ref<ChartData>({ time: [], values: [] }); // 预测的最大�
 const chartData4 = ref<ChartData>({ time: [], values: [] }); // 实际的最大回撤比例
 
 const reportContent = ref<string>("");
+const portfolioData = ref<PortfolioItem[]>([]);
 
 // 国家映射
 const countryMapping = ref<Record<string, string>>(countryNameZhMapping);
 
 const maxDrawdown = ref<number>();
-const selectedPeriod = ref<number>(); 
+const selectedPeriod = ref<number>();
+const secondCountryName = computed(() => {
+  return selectedCountries.value.length >= 2 
+    ? countryMapping.value[selectedCountries.value[1]]
+    : '';
+});
 
 // 初始化逻辑
 onMounted(() => {
@@ -236,9 +293,40 @@ const fetchChartData = async () => {
     } else {
       reportContent.value = "未找到报告内容";
     }
+
+    if (response.data.data.hedge_portfolio) {
+      portfolioData.value = response.data.data.hedge_portfolio;
+    }
   } catch (error) {
     console.error("请求失败:", error);
     // ElMessage.error("数据加载失败");
+  }
+};
+
+// 分类标签
+const getTagType = (classType: string) => {
+  switch (classType) {
+    case "safe_haven":
+      return "success"; // 绿色 - 避险货币
+    case "major":
+      return "primary"; // 蓝色 - 主要货币
+    case "emerging":
+      return "warning"; // 黄色 - 新兴货币
+    default:
+      return "info";
+  }
+};
+
+const formatClass = (classType: string) => {
+  switch (classType) {
+    case "safe_haven":
+      return "避险货币";
+    case "major":
+      return "主要货币";
+    case "emerging":
+      return "新兴货币";
+    default:
+      return classType;
   }
 };
 
@@ -318,10 +406,12 @@ watch([selectedCountries, dateRange], () => {
 }
 
 .select_calendar {
+  margin-top: 10px;
   padding: 10px;
   width: 100%;
 }
 .select_country {
+  margin-top: 10px;
   padding: 10px;
   width: 100%;
 }
@@ -346,6 +436,7 @@ watch([selectedCountries, dateRange], () => {
 }
 .button {
   margin-left: 20px;
+  margin-right: 20px;
   align-items: center;
   width: 10%;
 }
@@ -378,5 +469,44 @@ watch([selectedCountries, dateRange], () => {
 .report_empty {
   color: #999;
   font-style: italic;
+}
+.portfolio_container {
+  margin: 20px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.portfolio_title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.portfolio_content {
+  padding: 10px;
+}
+
+.portfolio_container .el-table {
+  background-color: #5677a8; /* 浅灰色背景 */
+}
+
+.table-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.portfolio_notice {
+  margin-bottom: 10px;
+  padding: 5px;
+  border-radius: 4px;
+  color: #606266;
+  text-align: center;
+}
+
+.portfolio_notice b {
+  color: #409eff;
+  font-weight: bold;
 }
 </style>

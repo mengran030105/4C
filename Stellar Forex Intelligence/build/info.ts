@@ -7,7 +7,7 @@ import boxen, { type Options as BoxenOptions } from "boxen";
 dayjs.extend(duration);
 
 const welcomeMessage = gradient(["cyan", "magenta"]).multiline(
-  `您好! 欢迎使用由云衢智鉴开发的数据驱动的外汇风险信号模型系统`
+  `您好! 欢迎使用由星图智汇开发的AI赋能的多模态外汇风险预测系统`
 );
 
 const boxenOptions: BoxenOptions = {

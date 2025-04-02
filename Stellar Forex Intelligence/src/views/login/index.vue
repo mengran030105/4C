@@ -8,7 +8,7 @@ import type { FormInstance } from "element-plus";
 import { useLayout } from "@/layout/hooks/useLayout";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
-import { bg, logo, avatar, illustration } from "./utils/static";
+import { bg, logo, illustration } from "./utils/static";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { ref, reactive, toRaw, onMounted, onBeforeUnmount } from "vue";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
@@ -179,6 +179,7 @@ onBeforeUnmount(() => {
             <Motion :delay="250">
               <el-button
                 class="w-full mt-4"
+                style="background-color: #b381ae; border-color: #cec3ec"
                 size="default"
                 type="primary"
                 :loading="loading"
@@ -191,6 +192,7 @@ onBeforeUnmount(() => {
           <Motion :delay="250">
             <el-button
               class="w-full mt-4"
+              style="background-color: #b381ae; border-color: #cec3ec"
               size="default"
               type="primary"
               @click="gotoRegister"
@@ -211,5 +213,25 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 :deep(.el-input-group__append, .el-input-group__prepend) {
   padding: 0;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 20px;
+}
+
+:deep(.el-input) {
+  font-size: 16px;
+  height: 48px;
+
+  .el-input__wrapper {
+    padding: 8px 15px;
+  }
+}
+
+:deep(.el-button) {
+  font-size: 16px;
+  padding: 12px 20px;
+  height: auto;
+  margin-top: 20px;
 }
 </style>

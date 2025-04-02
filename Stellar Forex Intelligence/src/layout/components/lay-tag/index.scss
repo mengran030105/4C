@@ -56,7 +56,7 @@
       justify-content: center;
       width: 18px;
       height: 18px;
-      color: var(--el-color-primary);
+      color: #827281;
       cursor: pointer;
       border-radius: 4px;
       transition:
@@ -203,11 +203,12 @@
   }
 
   .tag-title {
-    color: var(--el-color-primary) !important;
+    color: #b79dbe;
+    font-weight: bold;
   }
 
   .chrome-close-btn {
-    color: var(--el-color-primary);
+    color: black;
 
     &:hover {
       background-color: var(--el-color-primary);
@@ -228,7 +229,7 @@
   justify-content: center;
   width: 40px;
   height: 34px;
-  color: var(--el-text-color-primary);
+  color: #b79dbe;
 
   svg {
     width: 20px;
@@ -255,10 +256,10 @@
 
 /* 卡片模式下鼠标移入显示蓝色边框 */
 .card-in {
-  color: var(--el-color-primary);
+  color: #b79dbe;
 
   .tag-title {
-    color: var(--el-color-primary);
+    color: #b79dbe;
   }
 }
 
@@ -279,7 +280,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--el-color-primary);
+  background: #b79dbe;
 }
 
 /* 灵动模式下鼠标移入显示蓝色进度条 */
@@ -289,7 +290,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--el-color-primary);
+  background: #b79dbe;
   animation: schedule-in-width 200ms ease-in;
 }
 
@@ -300,7 +301,7 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--el-color-primary);
+  background: #b79dbe;
   animation: schedule-out-width 200ms ease-in;
 }
 

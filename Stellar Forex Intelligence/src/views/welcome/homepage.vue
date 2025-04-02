@@ -96,10 +96,10 @@
               class="news-item"
               @click="selectNews(index)"
             >
-              <h3>{{ item.title }}（点击查看新闻详情）</h3>
+              <h3>{{ item.Title }}（点击查看新闻详情）</h3>
               <!-- 点击后展示的详细内容 -->
               <div v-if="selectedNewsIndex === index" class="news-detail">
-                <p>{{ item.content }}</p>
+                <p>{{ item.Content }}</p>
                 <span class="news-date">{{ item.date }}</span>
               </div>
             </div>
@@ -114,8 +114,8 @@
               :key="index"
               class="policy-item"
             >
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.content }}</p>
+              <h3>{{ item.date }}</h3>
+              <p>{{ item.text_vectors }}</p>
             </div>
           </div>
 
@@ -479,14 +479,11 @@ const fetchAllData = async () => {
 
   // 获取新闻数据
   try {
-    const newsResponse = await axios.post(`http://127.0.0.1:8000/news/`, {
+    const newsResponse = await axios.post(`http://121.36.9.36:8000/news/`, {
       country: selectedCountry.value,
       date: selectedDate.value
     });
-    newsData.value = newsResponse.data.news_info.Content;
-    newsTitle.value = newsResponse.data.news_info.Title;
-    console.log(newsData.value);
-    console.log(newsTitle.value);
+    newsData.value = newsResponse.data.news_info;
   } catch (error) {
     console.error("获取新闻数据失败:", error);
     newsData.value = [];
@@ -494,15 +491,11 @@ const fetchAllData = async () => {
 
   // 获取政策数据
   try {
-    const policyResponse = await axios.post(`http://127.0.0.1:8000/policy/`, {
+    const policyResponse = await axios.post(`http://121.36.9.36:8000/policy/`, {
       country: selectedCountry.value,
       date: selectedDate.value
     });
-    policyData.value = policyResponse.data.policy_info.text_vectors;
-    policyDate.value = policyResponse.data.policy_info.date;
-
-    console.log(policyData.value);
-    console.log(policyDate.value);
+    policyData.value = policyResponse.data.policy_info;
   } catch (error) {
     console.error("获取政策数据失败:", error);
     policyData.value = [];

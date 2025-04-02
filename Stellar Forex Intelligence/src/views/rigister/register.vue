@@ -1,102 +1,98 @@
 <template>
   <div class="register-wrapper">
+    <img :src="bg" class="wave" />
     <div class="register-container">
-      <div class="form-header">
-        <h2>创建账号</h2>
+      <div class="illustration-container">
+        <component :is="toRaw(illustration)" />
       </div>
-      <form class="floating-form" @submit.prevent="handleRegister">
-        <!-- <div class="ID-style">
-                  ID：{{ userID }}
-                </div> -->
-        <!-- <div class="input-group">
-                    <input type="number" id="userID" v-model="userID" />
-                    <label for="userID">ID</label>
-                    <span class="highlight"></span>
-                </div> -->
-        <div class="input-group">
-          <input
-            id="username"
-            v-model="username"
-            type="text"
-            required
-            maxlength="20"
-          />
-          <label for="username">昵称</label>
-          <span class="highlight" />
+      <div class="form-container">
+        <div class="form-header">
+          <h2>创建账号</h2>
         </div>
-        <div class="input-group">
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            required
-            minlength="6"
-            maxlength="20"
-          />
-          <label for="password">密码</label>
-          <span class="highlight" />
-        </div>
-        <div class="input-group">
-          <input
-            id="confirmPassword"
-            v-model="confirmPassword"
-            type="password"
-            required
-            minlength="6"
-            maxlength="20"
-          />
-          <label for="confirmPassword">确认密码</label>
-          <span class="highlight" />
-        </div>
-        <div class="input-group">
-          <input id="email" v-model="email" type="email" required />
-          <label for="email">邮箱地址</label>
-          <span class="highlight" />
-        </div>
-        <div class="category-group">
-          <div class="option">
+        <form class="floating-form" @submit.prevent="handleRegister">
+          <div class="input-group">
             <input
-              id="enterprise"
-              v-model="category"
-              type="radio"
-              name="category"
-              value="enterprise"
+              id="username"
+              v-model="username"
+              type="text"
+              required
+              maxlength="20"
             />
-            <label for="enterprise">企业</label>
+            <label for="username">昵称</label>
+            <span class="highlight" />
           </div>
-          <div class="option">
+          <div class="input-group">
             <input
-              id="personal"
-              v-model="category"
-              type="radio"
-              name="category"
-              value="personal"
+              id="password"
+              v-model="password"
+              type="password"
+              required
+              minlength="6"
+              maxlength="20"
             />
-            <label for="personal">个人</label>
+            <label for="password">密码</label>
+            <span class="highlight" />
           </div>
-          <div class="option">
+          <div class="input-group">
             <input
-              id="bank"
-              v-model="category"
-              type="radio"
-              name="category"
-              value="bank"
+              id="confirmPassword"
+              v-model="confirmPassword"
+              type="password"
+              required
+              minlength="6"
+              maxlength="20"
             />
-            <label for="bank">银行</label>
+            <label for="confirmPassword">确认密码</label>
+            <span class="highlight" />
           </div>
-        </div>
+          <div class="input-group">
+            <input id="email" v-model="email" type="email" required />
+            <label for="email">邮箱地址</label>
+            <span class="highlight" />
+          </div>
+          <div class="category-group">
+            <div class="option">
+              <input
+                id="enterprise"
+                v-model="category"
+                type="radio"
+                name="category"
+                value="enterprise"
+              />
+              <label for="enterprise">企业</label>
+            </div>
+            <div class="option">
+              <input
+                id="personal"
+                v-model="category"
+                type="radio"
+                name="category"
+                value="personal"
+              />
+              <label for="personal">个人</label>
+            </div>
+            <div class="option">
+              <input
+                id="bank"
+                v-model="category"
+                type="radio"
+                name="category"
+                value="bank"
+              />
+              <label for="bank">银行</label>
+            </div>
+          </div>
 
-        <button type="submit" class="submit-btn">
-          <span>立即注册</span>
-          <i class="arrow-icon" />
-        </button>
-        <div class="form-footer">
-          <span>已有账号？</span>
-          <!-- <RouterLink to="/login" active-class="active">立即登录</RouterLink> -->
-          <!-- <a href="/login">立即登录</a> -->
-          <RouterLink to="/login">立即登录</RouterLink>
-        </div>
-      </form>
+          <button type="submit" class="submit-btn">
+            <span>立即注册</span>
+            <i class="arrow-icon" />
+          </button>
+          <div class="form-footer">
+            <span>已有账号？</span>
+            <RouterLink to="/login">立即登录</RouterLink>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </template>
@@ -105,6 +101,8 @@
 import { ref } from "vue";
 import axios from "axios";
 import { RouterLink } from "vue-router";
+import { toRaw } from "vue";
+import { bg, illustration } from "../login/utils/static";
 
 const username = ref("");
 const password = ref("");
@@ -113,14 +111,6 @@ const email = ref("");
 const category = ref("");
 
 const handleRegister = async () => {
-  console.log({
-    username: username.value,
-    password: password.value,
-    confirmPassword: confirmPassword.value,
-    email: email.value,
-    category: category.value
-  });
-  // 检查密码和确认密码是否相同
   if (password.value !== confirmPassword.value) {
     alert("密码和确认密码不匹配，请重新输入！");
     return;
@@ -135,24 +125,18 @@ const handleRegister = async () => {
   };
 
   try {
-    // 发送 POST 请求到后端
     const response = await axios.post(
-      "http://121.36.9.36:8000/register/", //"http://121.36.9.36:5959/register/"
+      "http://121.36.9.36:8000/register/",
       data
     );
     if (response.data.status == "ok") {
-      console.log("注册成功:", response.data);
-
-      // 注册成功后跳转到登录页面
       window.location.href = "/login";
     } else {
       alert(response.data.message);
-      return;
     }
   } catch (error) {
     console.error("注册失败:", error);
-    console.log(response.data.message);
-    alert(response.data.message);
+    alert(error.response?.data?.message || "注册失败，请稍后重试");
   }
 };
 </script>
@@ -164,16 +148,51 @@ const handleRegister = async () => {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.wave {
+  position: absolute;
+  height: 100%;
+  left: 0;
+  bottom: 0;
+  z-index: 0;
 }
 
 .register-container {
+  display: flex;
   width: 100%;
-  max-width: 480px;
+  max-width: 1200px;
+  margin: 0 auto;
   background: white;
   border-radius: 20px;
-  padding: 40px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.illustration-container {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illustration-container svg {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+}
+
+.form-container {
+  flex: 1;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .form-header {
@@ -188,21 +207,22 @@ const handleRegister = async () => {
   font-weight: 700;
 }
 
-.form-header p {
-  color: #95a5a6;
-  font-size: 16px;
+.floating-form {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-.floating-form .input-group {
+.input-group {
   position: relative;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .input-group input {
   width: 100%;
   padding: 15px;
   border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  border-radius: 8px;
   font-size: 16px;
   transition: all 0.3s ease;
   background: transparent;
@@ -223,49 +243,59 @@ const handleRegister = async () => {
 
 .input-group input:focus,
 .input-group input:valid {
-  border-color: #3498db;
+  border-color: #b381ae;
+  outline: none;
 }
 
 .input-group input:focus + label,
 .input-group input:valid + label {
   top: 0;
   font-size: 14px;
-  color: #3498db;
+  color: #b381ae;
 }
 
-.verification-group {
+.category-group {
   display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
   gap: 10px;
 }
 
-.verification-group input {
+.option {
   flex: 1;
+  position: relative;
 }
 
-.send-code-btn {
-  padding: 0 20px;
-  background: #e8f5fe;
-  color: #3498db;
-  border: none;
-  border-radius: 12px;
-  font-size: 14px;
+.option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.option label {
+  display: block;
+  padding: 12px;
+  text-align: center;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  white-space: nowrap;
 }
 
-.send-code-btn:hover {
-  background: #d0e9fd;
+.option input[type="radio"]:checked + label {
+  border-color: #b381ae;
+  background-color: #f5e9f4;
+  color: #b381ae;
+  font-weight: 500;
 }
 
 .submit-btn {
   width: 100%;
   padding: 15px;
-  background: linear-gradient(to right, #3498db, #2980b9);
+  background: linear-gradient(to right, #c19dbe, #b381ae);
   color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 18px;
+  border-radius: 8px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -277,7 +307,7 @@ const handleRegister = async () => {
 
 .submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 5px 15px rgba(179, 129, 174, 0.3);
 }
 
 .arrow-icon {
@@ -292,143 +322,66 @@ const handleRegister = async () => {
   text-align: center;
   margin-top: 20px;
   color: #95a5a6;
+  font-size: 14px;
 }
 
 .form-footer a {
-  color: #3498db;
+  color: #b381ae;
   text-decoration: none;
   margin-left: 5px;
   font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 .form-footer a:hover {
+  color: #9a6b96;
   text-decoration: underline;
 }
 
-@media (max-width: 480px) {
+/* 响应式设计 */
+@media (max-width: 992px) {
   .register-container {
-    padding: 20px;
+    flex-direction: column;
+    max-width: 600px;
   }
-
-  .form-header h2 {
-    font-size: 24px;
+  
+  .illustration-container {
+    padding: 30px;
   }
-
-  .input-group input {
-    padding: 12px;
+  
+  .form-container {
+    padding: 40px 30px;
   }
 }
 
 @media (max-width: 768px) {
   .register-container {
-    max-width: 400px;
-    padding: 30px;
+    border-radius: 0;
+    min-height: 100vh;
   }
-
-  .form-header h2 {
-    font-size: 28px;
-  }
-
-  .form-header p {
-    font-size: 14px;
+  
+  .category-group {
+    flex-direction: column;
+    gap: 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .register-container {
-    padding: 20px;
-    margin: 10px;
-    max-width: 100%;
+  .form-container {
+    padding: 30px 20px;
   }
-
+  
   .form-header h2 {
-    font-size: 24px;
+    font-size: 28px;
   }
-
-  .form-header p {
-    font-size: 14px;
-  }
-
+  
   .input-group input {
     padding: 12px;
-    font-size: 14px;
   }
-
-  .input-group label {
-    font-size: 14px;
-  }
-
-  .verification-group {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .send-code-btn {
-    width: 100%;
-    padding: 12px;
-  }
-
+  
   .submit-btn {
     padding: 12px;
-    font-size: 16px;
+    font-size: 15px;
   }
-}
-
-@media (max-width: 320px) {
-  .register-container {
-    padding: 15px;
-  }
-
-  .form-header h2 {
-    font-size: 20px;
-  }
-
-  .input-group {
-    margin-bottom: 20px;
-  }
-}
-
-.category-group {
-  display: flex;
-  margin-bottom: 30px;
-  font-family: inherit;
-  gap: 48px;
-}
-
-.option {
-  margin-left: 10px;
-  margin-right: 10px;
-  flex: 1;
-  text-align: center;
-  position: center;
-  overflow: hidden;
-  border-radius: 8px;
-  background: #f5f7fa;
-  transition: all 0.3s ease;
-  border: 1px solid #e0e0e0;
-}
-
-.option input[type="radio"] {
-  display: none;
-}
-
-.option label {
-  display: block;
-  padding: 10px 15px;
-  font-size: 14px;
-  color: #2c3e50;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.option:hover {
-  background: #e0e9f5;
-  border-color: #3498db;
-}
-
-.option input[type="radio"]:checked + label {
-  background: #3498db;
-  color: white;
-  border-radius: 6px;
 }
 </style>

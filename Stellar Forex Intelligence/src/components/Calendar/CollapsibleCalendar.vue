@@ -9,30 +9,41 @@
       end-placeholder="结束日期"
       format="YYYY-MM-DD"
       value-format="YYYY-MM-DD"
-      :default-value="defaultDateRange"
+      :default-value="defaultMonth"
       :disabledDate="disabledDate"
+      @change="handleDateRangeChange"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import { ElDatePicker } from "element-plus";
+import { ref } from "vue";
+import { ElDatePicker, ElMessage } from "element-plus";
 
-// 默认日期范围
-const defaultDateRange = ref<[Date, Date]>([
-  new Date("2024-12-01"),
-  new Date("2024-12-07")
-]);
-const dateRange = ref<[Date, Date]>(defaultDateRange.value);
+const dateRange = ref<[Date, Date] | null>(null);
 
-// 触发日期范围变化事件
+const defaultMonth = ref<Date>(new Date(2024, 11));
+
 const emit = defineEmits(["dateRangeSelected"]);
-watch(dateRange, newRange => {
-  if (newRange && newRange.length === 2) {
-    emit("dateRangeSelected", newRange);
+
+// 处理日期范围变化
+const handleDateRangeChange = (val: [string, string] | null) => {
+  if (!val || val.length !== 2) return;
+
+  const startDate = new Date(val[0]);
+  const endDate = new Date(val[1]);
+  const diffDays = Math.floor(
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays > 15) {
+    ElMessage.warning("由于DeepSeek的tokens有限，日期跨度请勿超过15天");
+    dateRange.value = null;
+    return;
   }
-});
+
+  emit("dateRangeSelected", [startDate, endDate]);
+};
 
 // 禁用不在2024年的日期
 const disabledDate = (date: Date) => {

@@ -16,7 +16,7 @@ const TITLE = getConfig("Title");
       href="http://1.95.211.14"
       target="_blank"
     >
-      3168491282@qq.com
+      XingTuZhiHui@163.com
     </a>
   </footer>
 </template>

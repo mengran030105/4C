@@ -1,9 +1,11 @@
 <template>
-  <div ref="chart" style="width: 100%; height: 400px"></div>
+  <div class="chart-container" ref="chartContainer">
+    <div ref="chart" class="chart"></div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, onBeforeUnmount } from "vue";
+import { ref, onMounted, watch, onBeforeUnmount, nextTick } from "vue";
 import * as echarts from "echarts";
 
 const props = defineProps<{
@@ -15,20 +17,44 @@ const props = defineProps<{
   title: string;
 }>();
 
+const chartContainer = ref<HTMLElement | null>(null);
 const chart = ref<HTMLElement | null>(null);
-let myChart: echarts.ECharts | null = null; // 存储图表实例
+let myChart: echarts.ECharts | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
-// 销毁图表实例
+const initChart = async () => {
+  await nextTick();
+  if (!chart.value || !chartContainer.value) return;
+
+  disposeChart();
+  myChart = echarts.init(chart.value);
+
+  // 强制设置容器尺寸
+  chartContainer.value.style.width = "100%";
+  chartContainer.value.style.height = "400px";
+
+  renderChart();
+
+  // 添加响应式监听
+  resizeObserver = new ResizeObserver(() => {
+    myChart?.resize();
+  });
+  resizeObserver.observe(chartContainer.value);
+};
+
 const disposeChart = () => {
   if (myChart) {
     myChart.dispose();
     myChart = null;
   }
+  if (resizeObserver) {
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
 };
 
-// 渲染图表
 const renderChart = () => {
-  if (!chart.value) return;
+  if (!myChart) return;
 
   // 先销毁旧实例
   disposeChart();
@@ -120,16 +146,14 @@ const renderChart = () => {
   myChart.setOption(option);
 };
 
-// 生命周期
 onMounted(() => {
-  renderChart();
+  initChart();
 });
 
 onBeforeUnmount(() => {
   disposeChart();
 });
 
-// 监听数据变化
 watch(
   () => [props.chartData, props.maxDrawdown],
   () => {
@@ -138,3 +162,19 @@ watch(
   { deep: true }
 );
 </script>
+
+<style scoped>
+.chart-container {
+  width: 100%;
+  height: 400px;
+  position: relative;
+}
+
+.chart {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+</style>
