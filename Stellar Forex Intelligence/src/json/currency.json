@@ -1,0 +1,306 @@
+[
+  {
+    "continent": "亚洲",
+    "children": [
+      {
+        "currency": "人民币（CNY）",
+        "children": [
+          {
+            "country": "China",
+            "value": 20
+          }
+        ]
+      },
+      {
+        "currency": "阿联酋迪拉姆（AED）",
+        "children": [
+          {
+            "country": "United Arab Emirates",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "以色列新谢克尔（ILS）",
+        "children": [
+          {
+            "country": "Israel",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "印度卢比（INR）",
+        "children": [
+          {
+            "country": "India",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "日元（JPY）",
+        "children": [
+          {
+            "country": "Japan",
+            "value": 9.00
+          }
+        ]
+      },
+      {
+        "currency": "韩元（KRW）",
+        "children": [
+          {
+            "country": "Korea",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "俄罗斯卢布（RUB）",
+        "children": [
+          {
+            "country": "Russia",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "沙特里亚尔（SAR）",
+        "children": [
+          {
+            "country": "Saudi Arabia",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "泰铢（THB）",
+        "children": [
+          {
+            "country": "Thailand",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "土耳其里拉（TRY）",
+        "children": [
+          {
+            "country": "Turkey",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "印尼卢比（IDR）",
+        "children": [
+          {
+            "country": "Indonesia",
+            "value": 5.00
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "continent": "欧洲",
+    "children": [
+      {
+        "currency": "欧元（EUR）",
+        "children": [
+          {
+            "country": "Germany",
+            "value": 5.00
+          },
+          {
+            "country": "France",
+            "value": 5.00
+          },
+          {
+            "country": "Italy",
+            "value": 5.00
+          },
+          {
+            "country": "Netherlands",
+            "value": 5.00
+          },
+          {
+            "country": "Belgium",
+            "value": 5.00
+          },
+          {
+            "country": "Luxembourg",
+            "value": 5.00
+          },
+          {
+            "country": "Ireland",
+            "value": 5.00
+          },
+          {
+            "country": "Spain",
+            "value": 5.00
+          },
+          {
+            "country": "Portugal",
+            "value": 5.00
+          },
+          {
+            "country": "Austria",
+            "value": 5.00
+          },
+          {
+            "country": "Finland",
+            "value": 5.00
+          },
+          {
+            "country": "Lithuania",
+            "value": 5.00
+          },
+          {
+            "country": "Latvia",
+            "value": 5.00
+          },
+          {
+            "country": "Estonia",
+            "value": 5.00
+          },
+          {
+            "country": "Slovakia",
+            "value": 5.00
+          },
+          {
+            "country": "Greece",
+            "value": 5.00
+          },
+          {
+            "country": "Croatia",
+            "value": 5.00
+          },
+          {
+            "country": "Cyprus",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "英镑（GBP）",
+        "children": [
+          {
+            "country": "Great_Britain",
+            "value": 6.00
+          }
+        ]
+      },
+      {
+        "currency": "瑞士法郎（CHF）",
+        "children": [
+          {
+            "country": "Switzerland",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "挪威克朗（NOK）",
+        "children": [
+          {
+            "country": "Norway",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "波兰兹罗提（PLN）",
+        "children": [
+          {
+            "country": "Poland",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "俄罗斯卢布（RUB）",
+        "children": [
+          {
+            "country": "Russia",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "瑞典克朗（SEK）",
+        "children": [
+          {
+            "country": "Sweden",
+            "value": 5.00
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "continent": "美洲",
+    "children": [
+      {
+        "currency": "阿根廷比索（ARS）",
+        "children": [
+          {
+            "country": "Argentina",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "巴西雷亚尔（BRL）",
+        "children": [
+          {
+            "country": "Brazil",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "加拿大元（CAD）",
+        "children": [
+          {
+            "country": "Canada",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "墨西哥比索（MXN）",
+        "children": [
+          {
+            "country": "Mexico",
+            "value": 5.00
+          }
+        ]
+      },
+      {
+        "currency": "美元（USD）",
+        "children": [
+          {
+            "country": "United States",
+            "value": 15.00
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "continent": "大洋洲",
+    "children": [
+      {
+        "currency": "澳元（AUD）",
+        "children": [
+          {
+            "country": "Australia",
+            "value": 5.00
+          }
+        ]
+      }
+    ]
+  }
+]
