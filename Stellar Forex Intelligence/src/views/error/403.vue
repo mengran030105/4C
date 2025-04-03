@@ -14,9 +14,9 @@ const router = useRouter();
 
 const chartRefLeft = ref<HTMLDivElement | null>(null);
 const chartRefRight = ref<HTMLDivElement | null>(null);
-const maxDrawdown = ref<number>(); 
-const selectedMonth = ref<number>(); 
-const selectedPeriod = ref<number>(); 
+const maxDrawdown = ref<number>();
+const selectedMonth = ref<number>();
+const selectedPeriod = ref<number>();
 const availableMonths = computed(() => {
   if (selectedPeriod.value === 1) {
     return [10, 11, 12];
@@ -153,7 +153,6 @@ const fetchChartData = async () => {
 const updateCharts = (result1: any, result2: any) => {
   if (!result1.nodes || !result1.edges || !result2.nodes || !result2.edges) {
     console.error("⚠️ result 数据缺少必要字段:", { result1, result2 });
-    // ElMessage.error("数据不完整，无法更新图表");
     return;
   }
 
@@ -165,77 +164,84 @@ const updateCharts = (result1: any, result2: any) => {
     return;
   }
 
+  // Hide charts before updating
+  if (chartRefLeft.value) chartRefLeft.value.style.visibility = "hidden";
+  if (chartRefRight.value) chartRefRight.value.style.visibility = "hidden";
+
   const formatGraphData = (data: any) => {
-    // 获取所有节点连接的边的 size
+    // 过滤掉无效的边（size <= 0 的边不显示）
     const validEdges = data.edges;
-    const validNodeIds = new Set(
-      validEdges.flatMap((edge: any) => [edge.sourceID, edge.targetID])
-    );
 
     return {
-      animationDurationUpdate: 1000,
-      animationEasingUpdate: "elasticOut" as any,
+      animation: true,
+      tooltip: {
+        formatter: (params: any) => {
+          if (params.dataType === "node") {
+            return params.data.name;
+          } else if (params.dataType === "edge") {
+            return `${params.data.source} → ${params.data.target}<br>强度: ${params.data.value}`;
+          }
+        }
+      },
       series: [
         {
           type: "graph",
           layout: "force",
-          roam: false,
+          roam: true, // 允许缩放和拖动
+          focusNodeAdjacency: true,
           force: {
-            repulsion: 1,
-            gravity: 0.02,
-            edgeLength: [50, 2000]
+            initLayout: "none", // 不进行初始布局计算，直接使用传入的坐标
+            repulsion: 500, // 适当减少斥力，避免过多计算
+            gravity: 0.2, // 增加引力，使节点快速收敛
+            edgeLength: [0, 2000], // 限制边长范围，减少抖动
+            friction: 1, // 让节点更快收敛（默认 0.6）
+            coolDown: 2
           },
-          boundingRect: [-500, -500, 1000, 1000],
-          // 过滤掉没有有效连接的节点
-          data: data.nodes
-            .filter((node: any) => validNodeIds.has(node.id))
-            .map((node: any) => ({
-              x: node.x,
-              y: node.y,
-              id: node.id,
-              name: node.label,
-              symbolSize: node.size,
-              draggable: true,
-              itemStyle: { color: node.color },
-              label: { show: true }
-            })),
-          // 只保留 size 不为 0 的边
-          edges: validEdges.map((edge: any) => {
-            let color = "#CFD8DC"; // 默认颜色
-            if (edge.size >= 1.3) {
-              color = "#F44336";
-            } else if (edge.size >= 1.1) {
-              color = "#EF9A9A";
-            } else if (edge.size >= 0.9) {
-              color = "#CFD8DC";
-            } else if (edge.size >= 0.7) {
-              color = "#81D4FA";
-            } else {
-              color = "#03A9F4";
+          data: data.nodes.map((node: any) => ({
+            id: node.id,
+            name: node.label || node.id,
+            x: node.x,
+            y: node.y,
+            symbolSize: Math.max(node.size / 2, 10), // 动态调整节点大小
+            itemStyle: { color: node.color || "#3398DB" },
+            label: { show: true, position: "right" }
+          })),
+          edges: validEdges.map((edge: any) => ({
+            source: edge.sourceID,
+            target: edge.targetID,
+            value: edge.size,
+            lineStyle: {
+              color: getEdgeColor(edge.size), // 根据 size 设置颜色
+              curveness: 0.1 // 轻微弯曲
             }
-
-            return {
-              source: edge.sourceID,
-              target: edge.targetID,
-              lineStyle: { color }
-            };
-          }),
+          })),
           emphasis: {
             scale: 1.2,
             focus: "adjacency",
-            roam: false,
-            lineStyle: { width: 0.5, curveness: 0.3, opacity: 0.7 }
+            lineStyle: { width: 2 }
           }
         }
       ]
     };
   };
 
+  // 根据边的 size 返回颜色
+  const getEdgeColor = (size: number) => {
+    if (size >= 1.3) return "#f44336"; // 高风险
+    if (size >= 0.9) return "#FF9800"; // 中风险
+    return "#03a9f4"; // 低风险
+  };
+
   // 更新左侧图表
   leftChart.setOption(formatGraphData(result1));
-
   // 更新右侧图表
   rightChart.setOption(formatGraphData(result2));
+
+  // Show charts after 1.5 seconds
+  setTimeout(() => {
+    if (chartRefLeft.value) chartRefLeft.value.style.visibility = "visible";
+    if (chartRefRight.value) chartRefRight.value.style.visibility = "visible";
+  }, 1500);
 };
 </script>
 
@@ -253,7 +259,7 @@ const updateCharts = (result1: any, result2: any) => {
           :step="0.01"
           @change="validateInput"
         >
-        <template #append>%</template>
+          <template #append>%</template>
         </el-input>
       </div>
       <div class="input1">
@@ -286,19 +292,19 @@ const updateCharts = (result1: any, result2: any) => {
       </div>
     </div>
     <div class="down">
-    <el-button class="button" @click="fetchChartData">查询</el-button>
-  </div>
+      <el-button class="button" @click="fetchChartData">查询</el-button>
+    </div>
 
     <div class="legend-container">
-    <div class="legend-item">
-      <span class="legend-line high-risk"></span>
-      <span>有风险货币关联（无向）</span>
+      <div class="legend-item">
+        <span class="legend-line high-risk" />
+        <span>有风险货币关联（无向）</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-line safe" />
+        <span>无风险货币关联（无向）</span>
+      </div>
     </div>
-    <div class="legend-item">
-      <span class="legend-line safe"></span>
-      <span>无风险货币关联（无向）</span>
-    </div>
-  </div>
 
     <div class="container">
       <div class="left">
@@ -312,7 +318,6 @@ const updateCharts = (result1: any, result2: any) => {
         <div ref="chartRefRight" class="chart" />
       </div>
     </div>
-    
   </div>
 </template>
 <style scoped>
@@ -327,10 +332,10 @@ const updateCharts = (result1: any, result2: any) => {
   margin-right: 100px;
 }
 .input1 {
-  flex:1;
+  flex: 1;
   margin-top: 10px;
   margin-right: 20px;
-  margin-left: 10px; 
+  margin-left: 10px;
   /* width: 100%; */
   /* margin: 20px; */
 }
@@ -383,17 +388,17 @@ const updateCharts = (result1: any, result2: any) => {
 .legend-line {
   display: inline-block;
   width: 40px; /* 线段长度 */
-  height: 3px;  /* 线段粗细 */
+  height: 3px; /* 线段粗细 */
   border-radius: 2px; /* 圆角端点 */
 }
 
 .high-risk {
-  background-color: #F44336;
+  background-color: #f44336;
   box-shadow: 0 0 2px rgba(244, 67, 54, 0.5);
 }
 
 .safe {
-  background-color: #03A9F4;
+  background-color: #03a9f4;
   box-shadow: 0 0 2px rgba(3, 169, 244, 0.5);
 }
 
