@@ -282,7 +282,7 @@
         "currency": "美元（USD）",
         "children": [
           {
-            "country": "United States",
+            "country": "United_States",
             "value": 15.00
           }
         ]
