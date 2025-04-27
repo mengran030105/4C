@@ -228,7 +228,7 @@ const updateCharts = (result1: any, result2: any) => {
   // 根据边的 size 返回颜色
   const getEdgeColor = (size: number) => {
     if (size >= 1.3) return "#f44336"; // 高风险
-    if (size >= 0.9) return "#FF9800"; // 中风险
+    
     return "#03a9f4"; // 低风险
   };
 
